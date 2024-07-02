@@ -1,0 +1,10 @@
+#[tool.pytest.ini_options]
+#pythonpath = [
+#".", "src",
+#]
+#asyncio_mode="auto"
+
+[tool.pytest.ini_options]
+pythonpath = [
+".", "src", "documents", "tests"
+]
