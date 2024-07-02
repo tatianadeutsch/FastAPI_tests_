@@ -16,10 +16,6 @@ def test_upload_valid_file(test_db):
     """Тест на загрузку файла с допустимым расширением"""
     with client:
         with open(f"documents/{file_name}", "rb") as f:
-            # with session_test() as session:
-            #     stmt = Documents(path=file_name)
-            #     session.add(stmt)
-            #     session.commit()
             response = client.post(f"http://127.0.0.1:8000/upload_doc", files={"file": (file_name, f, "image/jpeg")})
 
         assert response.status_code == 201
@@ -58,10 +54,37 @@ def test_delete(test_db, session_db, client):
 
     # Удаляем файл через API
     with client:
-        response = client.delete(f"http://127.0.0.1:8000/delete_doc/172")
+        response = client.delete(f"http://127.0.0.1:8000/delete_doc/174")
         print(response.json())
     assert response.status_code == 200
+
 
     # # Проверяем, что файл был удален
     # deleted_file = session_db.query(Documents.path).filter(Documents.id == {test_file.id}).first()
     # assert deleted_file is None
+
+    assert response.json() == {
+                "status": "success",
+                "data": "Изображение успешно удалено с жесткого диска вместе с записью из БД",
+                "details": None,
+            }
+
+def test_delete_not_exist(test_db, session_db, client):
+    '''Удаление записи из БД и с жестого диска'''
+
+
+    # Добавляем тестовый файл в базу данных
+    test_file = Documents(path="test_file.jpg")
+    session_db.add(test_file)
+    session_db.commit()
+
+    # Удаляем файл через API
+    with client:
+        response = client.delete(f"http://127.0.0.1:8000/delete_doc/1")
+        print(response.json())
+    assert response.status_code == 404
+    assert response.json() == {
+        "status": "error",
+        "data": None,
+        "details": "Запись с таким id отсутствует в БД",
+    }
